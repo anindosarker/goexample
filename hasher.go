@@ -1,25 +1,18 @@
 package main
 
-/*
-#include "solveHash.h"
-#include <stdlib.h>
-*/
-import "C"
 import (
 	// For future research, you can use
 	// "github.com/minio/sha256-simd"
 	// However, this relies on assembly code and may not build properly
-
+	"crypto/sha256"
 	"encoding/hex"
-	"errors"
 	"fmt"
-	"math"
 	"strconv"
-	"strings"
+	"math"
 	"time"
-	"unsafe"
-
 	"github.com/tidwall/gjson"
+	"strings"
+	"errors"
 )
 
 var (
@@ -29,28 +22,6 @@ var (
 	MaxRetries        = errors.New("Unsolvable Challenge: Retry Limit Exceeded")
 	HashLimitExceeded = errors.New("Unsolvable Challenge: Hash Limit Exceeded")
 )
-
-// Wrapper function to call the C function
-func solveHash(targetHash []byte, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff int64, startHashTrimmedLast string) (string, error) {
-	startHash, _ := strconv.ParseUint(startHashTrimmedLast, 10, 64)
-	cs := C.solveHash(
-		(*C.uint8_t)(C.CBytes(targetHash)),
-		C.uint64_t(startHashTwo),
-		C.uint64_t(startHash),
-		C.uint64_t(radix16HexNumber),
-		C.uint64_t(shiftedNumber),
-		C.uint64_t(hh),
-		C.uint64_t(aa),
-		C.uint64_t(ff),
-	)
-	if cs == nil {
-		return "", MaxRetries
-	}
-	result := C.GoString(cs)
-	C.free(unsafe.Pointer(cs))
-	return result, nil
-}
-
 
 func main() {
 	fmt.Println(GrabHash(`{"do":["sid|855a6699-bb9a-11ed-bbff-626c70424d52","pnf|cu","cls|32060492575082180333|23765544575816579762","sts|1678050785554","wcs|cg2gboauqq6urpbp0480","drc|6412","cts|855a6a77-bb9a-11ed-bbff-626c70424d52|false","cs|99006a3a7a4e999df3c2e5de2b63611201318ad0dbbb050765d0c8a44bf201c3","vid|67932318-bb9a-11ed-89dd-436342496472|31536000|false","cp|1|35bc35ef77d4d787c8f08d309e88a5c3c2d0ef6cbc05abc4b5f0b097b8|d6af800afdeb6718b9207fd11ff6ea7718142f6d81ca79fd0d9f0da42168c031|25|false","ci|1|85628f20-bb9a-11ed-b230-9124f8607fdd|1056|ee0addfef8ccf455eddcf27b24c993887a5731ec83bb00b4d81e01f1f4e2314270372b7f80313bbe706fde46b9ab548dcfd596d6d8aee51352984821ed4b3a1a󠄻󠄺󠄸󠄸|0|NA","sff|cc|60|U2FtZVNpdGU9TGF4Ow==","sff|idp_c|60|1,s","sff|rf|60|1","sff|fp|60|1"]}`, 30))
@@ -105,16 +76,74 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	startHashTwo := int64(1 << intDifficulty)
 
 	var ff int64 = 0
+	var gg int64 = 1
 	var hh int64 = 250
 
 	var solvedHash string
+	var notFound bool = true
 
+	tries := 0
 
-	solvedHash, err = solveHash(targetHash, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff, startHashTrimmedLast)
+	hasher := sha256.New()
+
+	//this part will be replaced//
+	for {
+		if !notFound {
+			break
+		}
+
+		tries++
+
+		var ts int64
+
+		for c := hh * gg; ff < startHashTwo; ff++ {
+			c--
+			ts = timestampNow()
+			tries++
+
+			if tries > 10000000000 {
+				return "", MaxRetries
+			}
+
+			p1 := strconv.FormatInt(radix16HexNumber+(ff>>(aa<<2)), 16)
+			basep2 := zeroString + strconv.FormatInt(ff&shiftedNumber, 16)
+			p2 := basep2[int64(len(basep2))-aa:]
+
+			g := startHashTrimmedLast + p1 + p2
+
+			hasher.Reset()
+			hasher.Write([]byte(g))
+
+			sum := hasher.Sum(nil)
+
+			isEqual := true
+			for i, v := range targetHash {
+				if sum[i] != v {
+					isEqual = false
+					break
+				}
+			}
+
+			if isEqual {
+				solvedHash = g
+				notFound = false
+				break
+			}
+		}
+
+		if timestampNow()-ts <= 50 {
+			gg++
+		} else {
+			gg--
+			gg = int64(math.Max(float64(gg), 1))
+		}
+
+	}
+
+	// until here //
 
 	
-
-	return solvedHash, err
+	return solvedHash, nil
 }
 
 func timestampNow() int64 {
