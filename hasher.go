@@ -2,9 +2,9 @@ package main
 
 import (
 	// For future research, you can use
-	// "github.com/minio/sha256-simd"
+	"github.com/minio/sha256-simd"
 	// However, this relies on assembly code and may not build properly
-	"crypto/sha256"
+	// "crypto/sha256"
 	"encoding/hex"
 	"fmt"
 	"strconv"
