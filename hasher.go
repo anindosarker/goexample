@@ -2,6 +2,8 @@ package main
 
 import (
 	// For future research, you can use
+	"sync"
+
 	"github.com/minio/sha256-simd"
 	// However, this relies on assembly code and may not build properly
 	// "crypto/sha256"
@@ -88,52 +90,72 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	hasher := sha256.New()
 
 	//this part will be replaced//
-	var ts int64 = timestampNow()
+	  solvedHashChan := make(chan string)
+    notFoundChan := make(chan bool)
 
-	for {
-		if !notFound {
-			break
-		}
+    var wg sync.WaitGroup
 
-		tries++
+    //this part will be replaced//
+    var ts int64 = timestampNow()
 
-		for c := hh * gg; ff < startHashTwo; ff++ {
-			c--
-			tries++
+    for {
+        if !notFound {
+            break
+        }
 
-			if tries > 10000000000 {
-				return "", MaxRetries
-			}
+        tries++
 
-			p1 := strconv.FormatInt(radix16HexNumber+(ff>>(aa<<2)), 16)
-			basep2 := zeroString + strconv.FormatInt(ff&shiftedNumber, 16)
-			p2 := basep2[int64(len(basep2))-aa:]
+        for c := hh * gg; ff < startHashTwo; ff++ {
+            c--
+            tries++
 
-			g := startHashTrimmedLast + p1 + p2
+            if tries > 10000000000 {
+                return "", MaxRetries
+            }
 
-			hasher.Reset()
-			hasher.Write([]byte(g))
+            p1 := strconv.FormatInt(radix16HexNumber+(ff>>(aa<<2)), 16)
+            basep2 := zeroString + strconv.FormatInt(ff&shiftedNumber, 16)
+            p2 := basep2[int64(len(basep2))-aa:]
 
-			sum := hasher.Sum(nil)
+            g := startHashTrimmedLast + p1 + p2
 
-			isEqual := true
-			for i, v := range targetHash {
-				if sum[i] != v {
-					isEqual = false
-					break
-				}
-			}
+            wg.Add(1)
+            go func(g string) {
+                defer wg.Done()
 
-			if isEqual {
-				solvedHash = g
-				notFound = false
-				break
-			}
-		}
+                hasher.Write([]byte(g))
+                sum := hasher.Sum(nil)
 
-		if timestampNow()-ts <= 50 {
-			gg++
-		} else {
+                isEqual := true
+                for i, v := range targetHash {
+                    if sum[i] != v {
+                        isEqual = false
+                        break
+                    }
+                }
+
+                if isEqual {
+                    solvedHashChan <- g
+                    notFoundChan <- false
+                }
+            }(g)
+        }
+
+        go func() {
+            wg.Wait()
+            close(solvedHashChan)
+            close(notFoundChan)
+        }()
+
+        select {
+        case solvedHash := <-solvedHashChan:
+            return solvedHash, nil
+        case notFound = <-notFoundChan:
+        }
+
+        if timestampNow()-ts <= 50 {
+            gg++
+        } else {
 			gg--
 			gg = int64(math.Max(float64(gg), 1))
 		}
