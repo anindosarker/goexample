@@ -292,6 +292,8 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
 
             uint8_t hash[64];
 
+            //TODO: Bug here. Hash is not being calculated correctly
+            //hash the value of g using SHA256. Most probably the SHA256 function is not working correctly
             sha256(g, strlen(g), hash);
 
             uint8_t isEqual = 1;
@@ -304,8 +306,6 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
                     break;
                 }
             }
-
-            // print all variables
 
             if (isEqual == 1)
             {
@@ -330,7 +330,7 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
                 }
 
                 printf("\n");
-                printf("tries: %lld, solvedhash: %s, g %s, notFound %d \n", tries, solvedHash, g, notFound);
+                printf("tries: %lld, solvedhash: %s, g %s, notFound %d isEqual %d\n", tries, solvedHash, g, notFound, isEqual);
                 break;
             }
 

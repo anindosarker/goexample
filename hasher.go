@@ -61,11 +61,11 @@ func GrabHash(doResponse string, maxDifficulty int) (string, error) {
 		return "", ErrParsingDifficulty
 	}
 
-	solve, err := solveChallenge(chalValues, maxDifficulty)
+    solve, err := solveChallenge(chalValues, int64(maxDifficulty))
 	return solve, err
 }
 
-func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
+func solveChallenge(chalValues []string, maxDifficulty int64) (string, error) {
 	startHash, targetHashS, difficulty := chalValues[0], chalValues[1], chalValues[2]
 
 	targetHash := make([]byte, 32)
