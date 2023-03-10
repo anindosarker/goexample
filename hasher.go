@@ -6,13 +6,14 @@ import (
 	// However, this relies on assembly code and may not build properly
 	// "crypto/sha256"
 	"encoding/hex"
-	"fmt"
-	"strconv"
-	"math"
-	"time"
-	"github.com/tidwall/gjson"
-	"strings"
 	"errors"
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -87,6 +88,10 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	hasher := sha256.New()
 
 	//this part will be replaced//
+	var ts int64
+	ts = timestampNow()
+
+
 	for {
 		if !notFound {
 			break
@@ -94,11 +99,9 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 
 		tries++
 
-		var ts int64
 
 		for c := hh * gg; ff < startHashTwo; ff++ {
 			c--
-			ts = timestampNow()
 			tries++
 
 			if tries > 10000000000 {
