@@ -46,20 +46,21 @@
 #ifndef SHA2_H
 #define SHA2_H
 
-#define SHA256_DIGEST_SIZE ( 256 / 8)
-#define SHA256_BLOCK_SIZE  ( 512 / 8)
+#define SHA256_DIGEST_SIZE (256 / 8)
+#define SHA256_BLOCK_SIZE (512 / 8)
 
-#define SHFR(x, n)    (x >> n)
-#define ROTR(x, n)   ((x >> n) | (x << ((sizeof(x) << 3) - n)))
-#define CH(x, y, z)  ((x & y) ^ (~x & z))
+#define SHFR(x, n) (x >> n)
+#define ROTR(x, n) ((x >> n) | (x << ((sizeof(x) << 3) - n)))
+#define CH(x, y, z) ((x & y) ^ (~x & z))
 #define MAJ(x, y, z) ((x & y) ^ (x & z) ^ (y & z))
 
-#define SHA256_F1(x) (ROTR(x,  2) ^ ROTR(x, 13) ^ ROTR(x, 22))
-#define SHA256_F2(x) (ROTR(x,  6) ^ ROTR(x, 11) ^ ROTR(x, 25))
-#define SHA256_F3(x) (ROTR(x,  7) ^ ROTR(x, 18) ^ SHFR(x,  3))
+#define SHA256_F1(x) (ROTR(x, 2) ^ ROTR(x, 13) ^ ROTR(x, 22))
+#define SHA256_F2(x) (ROTR(x, 6) ^ ROTR(x, 11) ^ ROTR(x, 25))
+#define SHA256_F3(x) (ROTR(x, 7) ^ ROTR(x, 18) ^ SHFR(x, 3))
 #define SHA256_F4(x) (ROTR(x, 17) ^ ROTR(x, 19) ^ SHFR(x, 10))
 
-typedef struct {
+typedef struct
+{
     unsigned int tot_len;
     unsigned int len;
     unsigned char block[2 * SHA256_BLOCK_SIZE];
@@ -68,7 +69,7 @@ typedef struct {
 
 extern uint32_t sha256_k[64];
 
-void sha256_init(sha256_ctx * ctx);
+void sha256_init(sha256_ctx *ctx);
 void sha256_update(sha256_ctx *ctx, const unsigned char *message,
                    unsigned int len);
 void sha256_final(sha256_ctx *ctx, unsigned char *digest);
@@ -77,49 +78,45 @@ void sha256(const unsigned char *message, unsigned int len,
 
 #endif /* !SHA2_H */
 
-#define UNPACK32(x, str)                      \
-{                                             \
-    *((str) + 3) = (uint8_t) ((x)      );       \
-    *((str) + 2) = (uint8_t) ((x) >>  8);       \
-    *((str) + 1) = (uint8_t) ((x) >> 16);       \
-    *((str) + 0) = (uint8_t) ((x) >> 24);       \
-}
+#define UNPACK32(x, str)                     \
+    {                                        \
+        *((str) + 3) = (uint8_t)((x));       \
+        *((str) + 2) = (uint8_t)((x) >> 8);  \
+        *((str) + 1) = (uint8_t)((x) >> 16); \
+        *((str) + 0) = (uint8_t)((x) >> 24); \
+    }
 
-#define PACK32(str, x)                        \
-{                                             \
-    *(x) =   ((uint32_t) *((str) + 3)      )    \
-           | ((uint32_t) *((str) + 2) <<  8)    \
-           | ((uint32_t) *((str) + 1) << 16)    \
-           | ((uint32_t) *((str) + 0) << 24);   \
-}
+#define PACK32(str, x)                                                                                                                             \
+    {                                                                                                                                              \
+        *(x) = ((uint32_t) * ((str) + 3)) | ((uint32_t) * ((str) + 2) << 8) | ((uint32_t) * ((str) + 1) << 16) | ((uint32_t) * ((str) + 0) << 24); \
+    }
 
-#define SHA256_SCR(i)                         \
-{                                             \
-    w[i] =  SHA256_F4(w[i -  2]) + w[i -  7]  \
-          + SHA256_F3(w[i - 15]) + w[i - 16]; \
-}
+#define SHA256_SCR(i)                                                             \
+    {                                                                             \
+        w[i] = SHA256_F4(w[i - 2]) + w[i - 7] + SHA256_F3(w[i - 15]) + w[i - 16]; \
+    }
 
 uint32_t sha256_h0[8] =
-            {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
-             0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
+    {0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a,
+     0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19};
 
 uint32_t sha256_k[64] =
-            {0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
-             0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
-             0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
-             0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
-             0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
-             0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
-             0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
-             0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
-             0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
-             0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
-             0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
-             0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
-             0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
-             0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
-             0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
-             0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
+    {0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+     0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+     0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+     0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+     0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+     0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+     0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+     0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+     0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+     0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+     0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+     0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+     0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+     0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+     0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2};
 
 /* SHA-256 functions */
 
@@ -134,24 +131,28 @@ void sha256_transf(sha256_ctx *ctx, const unsigned char *message,
 
     int j;
 
-    for (i = 0; i < (int) block_nb; i++) {
+    for (i = 0; i < (int)block_nb; i++)
+    {
         sub_block = message + (i << 6);
 
-        for (j = 0; j < 16; j++) {
+        for (j = 0; j < 16; j++)
+        {
             PACK32(&sub_block[j << 2], &w[j]);
         }
 
-        for (j = 16; j < 64; j++) {
+        for (j = 16; j < 64; j++)
+        {
             SHA256_SCR(j);
         }
 
-        for (j = 0; j < 8; j++) {
+        for (j = 0; j < 8; j++)
+        {
             wv[j] = ctx->h[j];
         }
 
-        for (j = 0; j < 64; j++) {
-            t1 = wv[7] + SHA256_F2(wv[4]) + CH(wv[4], wv[5], wv[6])
-                + sha256_k[j] + w[j];
+        for (j = 0; j < 64; j++)
+        {
+            t1 = wv[7] + SHA256_F2(wv[4]) + CH(wv[4], wv[5], wv[6]) + sha256_k[j] + w[j];
             t2 = SHA256_F1(wv[0]) + MAJ(wv[0], wv[1], wv[2]);
             wv[7] = wv[6];
             wv[6] = wv[5];
@@ -163,7 +164,8 @@ void sha256_transf(sha256_ctx *ctx, const unsigned char *message,
             wv[0] = t1 + t2;
         }
 
-        for (j = 0; j < 8; j++) {
+        for (j = 0; j < 8; j++)
+        {
             ctx->h[j] += wv[j];
         }
     }
@@ -181,7 +183,8 @@ void sha256(const unsigned char *message, unsigned int len, unsigned char *diges
 void sha256_init(sha256_ctx *ctx)
 {
     int i;
-    for (i = 0; i < 8; i++) {
+    for (i = 0; i < 8; i++)
+    {
         ctx->h[i] = sha256_h0[i];
     }
 
@@ -201,7 +204,8 @@ void sha256_update(sha256_ctx *ctx, const unsigned char *message,
 
     memcpy(&ctx->block[ctx->len], message, rem_len);
 
-    if (ctx->len + len < SHA256_BLOCK_SIZE) {
+    if (ctx->len + len < SHA256_BLOCK_SIZE)
+    {
         ctx->len += len;
         return;
     }
@@ -231,8 +235,7 @@ void sha256_final(sha256_ctx *ctx, unsigned char *digest)
 
     int i;
 
-    block_nb = (1 + ((SHA256_BLOCK_SIZE - 9)
-                     < (ctx->len % SHA256_BLOCK_SIZE)));
+    block_nb = (1 + ((SHA256_BLOCK_SIZE - 9) < (ctx->len % SHA256_BLOCK_SIZE)));
 
     len_b = (ctx->tot_len + ctx->len) << 3;
     pm_len = block_nb << 6;
@@ -243,61 +246,91 @@ void sha256_final(sha256_ctx *ctx, unsigned char *digest)
 
     sha256_transf(ctx, ctx->block, block_nb);
 
-    for (i = 0 ; i < 8; i++) {
+    for (i = 0; i < 8; i++)
+    {
         UNPACK32(ctx->h[i], &digest[i << 2]);
     }
 }
 
-char* solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrimmedLast, int64_t radix16HexNumber, int64_t shiftedNumber, int64_t hh, int64_t aa, int64_t ff) {
+char *solvedHash;
+
+char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrimmedLast, int64_t radix16HexNumber, int64_t shiftedNumber, int64_t hh, int64_t aa, int64_t ff)
+{
     uint64_t tries = 0, gg = 1;
-    char *solvedHash = NULL;
     uint8_t notFound = 1;
     time_t ts;
 
-    while(notFound) {
-        if(!notFound)
+    while (notFound)
+    {
+        if (notFound == 0)
             break;
 
         tries++;
 
         uint64_t c = hh * gg;
 
-        for(ff; ff < startHashTwo; ff++) {
+        for (ff; ff < startHashTwo; ff++)
+        {
             c--;
             ts = time(NULL);
             tries++;
 
-            if (tries > MaxRetries) {
+            if (tries > MaxRetries)
+            {
                 return "MaxRetries";
             }
 
             char *p1;
-            asprintf(&p1, "%llx", radix16HexNumber+(ff>>(aa<<2)));
+            asprintf(&p1, "%llx", radix16HexNumber + (ff >> (aa << 2)));
             char zeroString[17] = "0000000000000000";
             char *basep2;
-            asprintf(&basep2, "%llx", ff&shiftedNumber);
-            char *p2 = &basep2[strlen(basep2)-aa];
+            asprintf(&basep2, "%llx", ff & shiftedNumber);
+            char *p2 = &basep2[strlen(basep2) - aa];
 
             char *g;
             asprintf(&g, "%lld%s%s", startHashTrimmedLast, p1, p2);
 
-            uint8_t hash[32];
+            uint8_t hash[64];
 
             sha256(g, strlen(g), hash);
 
-            printf("tries: %lld, hash: %s \n", tries, g);
-
             uint8_t isEqual = 1;
-            for (int i = 0; i < 32; i++) {
-                if (hash[i] != targetHash[i]) {
+
+            for (int i = 0; i < 64; i++)
+            {
+                if (hash[i] != targetHash[i])
+                {
                     isEqual = 0;
                     break;
                 }
             }
 
-            if (isEqual) {
+            // print all variables
+
+            if (isEqual == 1)
+            {
                 solvedHash = g;
                 notFound = 0;
+                break;
+            }
+            solvedHash = g;
+            if (tries == 27904870)
+            {
+                // print hash and target hash
+                printf("hash: ");
+                for (int i = 0; i < 64; i++)
+                {
+                    printf("%d", hash[i]);
+                }
+
+                printf(" targetHash: ");
+                for (int i = 0; i < 64; i++)
+                {
+                    printf("%d", targetHash[i]);
+                }
+
+                printf("\n");
+                printf("tries: %lld, solvedhash: %s, g %s, notFound %d \n", tries, solvedHash, g, notFound);
                 break;
             }
 
@@ -306,9 +339,12 @@ char* solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
             free(g);
         }
 
-        if (time(NULL) - ts <= 50) {
+        if (time(NULL) - ts <= 50)
+        {
             gg++;
-        } else {
+        }
+        else
+        {
             gg--;
             gg = fmax(gg, 1);
         }
