@@ -285,7 +285,7 @@ char* solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
 
             sha256(g, strlen(g), hash);
 
-            printf("Here!\n");
+            printf("tries: %lld, hash: %s \n", tries, g);
 
             uint8_t isEqual = 1;
             for (int i = 0; i < 32; i++) {
