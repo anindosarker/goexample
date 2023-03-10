@@ -1,5 +1,9 @@
 package main
 
+/*
+#include <stdlib.h>
+*/
+import "C"
 import (
 	// For future research, you can use
 	"github.com/minio/sha256-simd"
