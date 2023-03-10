@@ -2,17 +2,18 @@ package main
 
 import (
 	// For future research, you can use
-	// "github.com/minio/sha256-simd"
+	"github.com/minio/sha256-simd"
 	// However, this relies on assembly code and may not build properly
-	"crypto/sha256"
+	// "crypto/sha256"
 	"encoding/hex"
-	"fmt"
-	"strconv"
-	"math"
-	"time"
-	"github.com/tidwall/gjson"
-	"strings"
 	"errors"
+	"fmt"
+	"math"
+	"strconv"
+	"strings"
+	"time"
+
+	"github.com/tidwall/gjson"
 )
 
 var (
@@ -87,6 +88,8 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	hasher := sha256.New()
 
 	//this part will be replaced//
+	var ts int64 = timestampNow()
+
 	for {
 		if !notFound {
 			break
@@ -94,11 +97,8 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 
 		tries++
 
-		var ts int64
-
 		for c := hh * gg; ff < startHashTwo; ff++ {
 			c--
-			ts = timestampNow()
 			tries++
 
 			if tries > 10000000000 {
@@ -142,7 +142,6 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 
 	// until here //
 
-	
 	return solvedHash, nil
 }
 
