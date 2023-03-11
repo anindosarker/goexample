@@ -1,3 +1,4 @@
+#define _GNU_SOURCE 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -282,7 +283,9 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
 
             char *p1;
             asprintf(&p1, "%llx", radix16HexNumber + (ff >> (aa << 2)));
-            char zeroString[17] = "0000000000000000";
+            // snprintf(p1, 64, "%llx", radix16HexNumber + (ff >> (aa << 2)));
+            char zeroString[64];
+            memset(zeroString, '0', 64);
             char *basep2;
             asprintf(&basep2, "%llx", ff & shiftedNumber);
             char *p2 = &basep2[strlen(basep2) - aa];
@@ -330,8 +333,8 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
                 }
 
                 printf("\n");
-                printf("tries: %lld, solvedhash: %s, g %s, notFound %d \n", tries, solvedHash, g, notFound);
-                break;
+                printf("tries: %lld, solvedhash: %s, g %s, notFound %d isEqual %d\n", tries, solvedHash, g, notFound, isEqual);
+                return g;
             }
 
             free(p1);

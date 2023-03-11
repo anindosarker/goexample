@@ -106,11 +106,10 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	var ff int64 = 0
 	var hh int64 = 250
 
-	var solvedHash string
 
-	solvedHash, err = solveHash(targetHash, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff, startHashTrimmedLast)
+	solvedHash, err := solveHash(targetHash, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff, startHashTrimmedLast)
 
-	return solvedHash, err
+	return solvedHash, nil
 }
 
 func timestampNow() int64 {
