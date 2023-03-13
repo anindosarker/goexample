@@ -282,7 +282,7 @@ char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHa
             }
 
             char *p1;
-            asprintf(&p1, "%llx", radix16HexNumber + (ff >> (aa << 2)));
+            int p1_size = asprintf(&p1, "%jd", radix16HexNumber + (ff >> (aa << 2)));
             // snprintf(p1, 64, "%llx", radix16HexNumber + (ff >> (aa << 2)));
             char zeroString[64];
             for (int64_t i = 0; i < aa; i++)
@@ -291,16 +291,14 @@ char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHa
             }
 
             char *basep2;
-            asprintf(&basep2, "%s%llx", zeroString, (ff & shiftedNumber));
+            int base2size = asprintf(&basep2, "%s%jx", zeroString, (ff & shiftedNumber));
             char *p2 = &basep2[strlen(basep2) - aa];
 
             char *g;
-            asprintf(&g, "%s%s%s", startHashTrimmedLast, p1, p2);
+            int g_size = asprintf(&g, "%s%s%s", startHashTrimmedLast, p1, p2);
 
             uint8_t hash[32];
 
-            // TODO: Bug here. Hash is not being calculated correctly
-            // hash the value of g using SHA256. Most probably the SHA256 function is not working correctly
             sha256(g, strlen(g), hash);
 
             uint8_t isEqual = 1;
