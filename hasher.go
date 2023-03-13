@@ -107,8 +107,8 @@ func solveChallenge(chalValues []string, maxDifficulty int64) (string, error) {
 	var ff int64 = 0
 	var hh int64 = 250
 
-	fmt.Println("startHashTrimmedLast in go: ", startHashTrimmedLast)
-	fmt.Println("targetHash in go: ", targetHash)
+	// fmt.Println("startHashTrimmedLast in go: ", startHashTrimmedLast)
+	// fmt.Println("targetHash in go: ", targetHash)
 
 
 	solvedHash, err := solveHash(targetHash, startHashTrimmedLast, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff)

@@ -304,9 +304,8 @@ char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHa
             sha256(g, strlen(g), hash);
 
             uint8_t isEqual = 1;
-            
-          
-            //check if hash and targetHash are equal
+
+            // check if hash and targetHash are equal
             for (int i = 0; i < 32; i++)
             {
                 if (hash[i] != targetHash[i])
@@ -316,31 +315,31 @@ char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHa
                 }
             }
 
-            if (tries == 27904870)
-            {
-                solvedHash = g;
-                // print the length of hash and targetHash
-                printf("hash length: %d, targetHash length: %d \n", sizeof(hash), sizeof(targetHash));
+            // if (tries == 27904870)
+            // {
+            //     solvedHash = g;
+            //     // print the length of hash and targetHash
+            //     // printf("hash length: %d, targetHash length: %d \n", sizeof(hash), sizeof(targetHash));
 
-                // print hash and target hash
-                printf("\nhash: ");
-                for (int i = 0; i < 64; i++)
-                {
-                    printf("%d", hash[i]);
-                }
+            //     // print hash and target hash
+            //     printf("\nhash: ");
+            //     for (int i = 0; i < 64; i++)
+            //     {
+            //         printf("%d", hash[i]);
+            //     }
 
-                printf("\n\ntargetHash: ");
-                for (int i = 0; i < 64; i++)
-                {
-                    printf("%d", targetHash[i]);
-                }
+            //     printf("\n\ntargetHash: ");
+            //     for (int i = 0; i < 64; i++)
+            //     {
+            //         printf("%d", targetHash[i]);
+            //     }
 
-                printf("\n\n");
-                printf("tries: %lld\nsolvedhash: %s\ng %s\nnotFound %d isEqual %d\n \n", tries, solvedHash, g, notFound, isEqual);
-                printf("p1: %s, p2: %s, basep2: %s, zeroString: %s\n \n", p1, p2, basep2, zeroString);
-                printf("startHashTrimmedLast: %s\n \n", startHashTrimmedLast);
-                printf("startHashTrimmedLast: %lld\n \n", *startHashTrimmedLast);
-            }
+            //     printf("\n\n");
+            //     printf("tries: %lld\nsolvedhash: %s\ng %s\nnotFound %d isEqual %d\n \n", tries, solvedHash, g, notFound, isEqual);
+            //     printf("p1: %s, p2: %s, basep2: %s, zeroString: %s\n \n", p1, p2, basep2, zeroString);
+            //     printf("stxartHashTrimmedLast: %s\n \n", startHashTrimmedLast);
+            //     printf("startHashTrimmedLast: %lld\n \n", *startHashTrimmedLast);
+            // }
 
             if (isEqual == 1)
             {
@@ -348,7 +347,6 @@ char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHa
                 notFound = 0;
                 break;
             }
-           
 
             free(p1);
             free(basep2);
