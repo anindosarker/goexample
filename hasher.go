@@ -3,6 +3,7 @@ package main
 /*
 #include "solveHash.h"
 #include <stdlib.h>
+#include <string.h>
 */
 import "C"
 import (
@@ -18,7 +19,6 @@ import (
 	"strings"
 	"time"
 	"unsafe"
-
 	"github.com/tidwall/gjson"
 )
 
@@ -31,12 +31,13 @@ var (
 )
 
 // Wrapper function to call the C function
-func solveHash(targetHash []byte, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff int64, startHashTrimmedLast string) (string, error) {
-	startHash, _ := strconv.ParseUint(startHashTrimmedLast, 10, 64)
+func solveHash(targetHash []byte, startHashTrimmedLast string, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff int64) (string, error) {
+
 	cs := C.solveHash(
 		(*C.uint8_t)(C.CBytes(targetHash)),
+		//pass the sthartHashTrimmedLast string to the C function
+		C.CString(startHashTrimmedLast),
 		C.uint64_t(startHashTwo),
-		C.uint64_t(startHash),
 		C.uint64_t(radix16HexNumber),
 		C.uint64_t(shiftedNumber),
 		C.uint64_t(hh),
@@ -106,8 +107,11 @@ func solveChallenge(chalValues []string, maxDifficulty int64) (string, error) {
 	var ff int64 = 0
 	var hh int64 = 250
 
+	fmt.Println("startHashTrimmedLast in go: ", startHashTrimmedLast)
+	fmt.Println("targetHash in go: ", targetHash)
 
-	solvedHash, err := solveHash(targetHash, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff, startHashTrimmedLast)
+
+	solvedHash, err := solveHash(targetHash, startHashTrimmedLast, startHashTwo, radix16HexNumber, shiftedNumber, hh, aa, ff)
 
 	return solvedHash, nil
 }

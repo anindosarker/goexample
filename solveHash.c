@@ -1,4 +1,4 @@
-#define _GNU_SOURCE 
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -255,7 +255,7 @@ void sha256_final(sha256_ctx *ctx, unsigned char *digest)
 
 char *solvedHash;
 
-char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrimmedLast, int64_t radix16HexNumber, int64_t shiftedNumber, int64_t hh, int64_t aa, int64_t ff)
+char *solveHash(uint8_t *targetHash, char *startHashTrimmedLast, int64_t startHashTwo, int64_t radix16HexNumber, int64_t shiftedNumber, int64_t hh, int64_t aa, int64_t ff)
 {
     uint64_t tries = 0, gg = 1;
     uint8_t notFound = 1;
@@ -285,23 +285,29 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
             asprintf(&p1, "%llx", radix16HexNumber + (ff >> (aa << 2)));
             // snprintf(p1, 64, "%llx", radix16HexNumber + (ff >> (aa << 2)));
             char zeroString[64];
-            memset(zeroString, '0', 64);
+            for (int64_t i = 0; i < aa; i++)
+            {
+                zeroString[i] = '0';
+            }
+
             char *basep2;
-            asprintf(&basep2, "%llx", ff & shiftedNumber);
+            asprintf(&basep2, "%s%llx", zeroString, (ff & shiftedNumber));
             char *p2 = &basep2[strlen(basep2) - aa];
 
             char *g;
-            asprintf(&g, "%lld%s%s", startHashTrimmedLast, p1, p2);
+            asprintf(&g, "%s%s%s", startHashTrimmedLast, p1, p2);
 
-            uint8_t hash[64];
+            uint8_t hash[32];
 
-            //TODO: Bug here. Hash is not being calculated correctly
-            //hash the value of g using SHA256. Most probably the SHA256 function is not working correctly
+            // TODO: Bug here. Hash is not being calculated correctly
+            // hash the value of g using SHA256. Most probably the SHA256 function is not working correctly
             sha256(g, strlen(g), hash);
 
             uint8_t isEqual = 1;
-
-            for (int i = 0; i < 64; i++)
+            
+          
+            //check if hash and targetHash are equal
+            for (int i = 0; i < 32; i++)
             {
                 if (hash[i] != targetHash[i])
                 {
@@ -310,32 +316,39 @@ char *solveHash(uint8_t *targetHash, int64_t startHashTwo, int64_t startHashTrim
                 }
             }
 
+            if (tries == 27904870)
+            {
+                solvedHash = g;
+                // print the length of hash and targetHash
+                printf("hash length: %d, targetHash length: %d \n", sizeof(hash), sizeof(targetHash));
+
+                // print hash and target hash
+                printf("\nhash: ");
+                for (int i = 0; i < 64; i++)
+                {
+                    printf("%d", hash[i]);
+                }
+
+                printf("\n\ntargetHash: ");
+                for (int i = 0; i < 64; i++)
+                {
+                    printf("%d", targetHash[i]);
+                }
+
+                printf("\n\n");
+                printf("tries: %lld\nsolvedhash: %s\ng %s\nnotFound %d isEqual %d\n \n", tries, solvedHash, g, notFound, isEqual);
+                printf("p1: %s, p2: %s, basep2: %s, zeroString: %s\n \n", p1, p2, basep2, zeroString);
+                printf("startHashTrimmedLast: %s\n \n", startHashTrimmedLast);
+                printf("startHashTrimmedLast: %lld\n \n", *startHashTrimmedLast);
+            }
+
             if (isEqual == 1)
             {
                 solvedHash = g;
                 notFound = 0;
                 break;
             }
-            solvedHash = g;
-            if (tries == 27904870)
-            {
-                // print hash and target hash
-                printf("hash: ");
-                for (int i = 0; i < 64; i++)
-                {
-                    printf("%d", hash[i]);
-                }
-
-                printf(" targetHash: ");
-                for (int i = 0; i < 64; i++)
-                {
-                    printf("%d", targetHash[i]);
-                }
-
-                printf("\n");
-                printf("tries: %lld, solvedhash: %s, g %s, notFound %d isEqual %d\n", tries, solvedHash, g, notFound, isEqual);
-                break;
-            }
+           
 
             free(p1);
             free(basep2);
