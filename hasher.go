@@ -40,7 +40,137 @@ func GrabHash(doResponse string, maxDifficulty int) (string, error) {
 	return solve, err
 }
 
+func timestampNow() int64 {
+	return time.Now().UnixMilli()
+}
+
+func fetchCapChallenge(responseOne string) []string {
+	if !strings.Contains(responseOne, "do") {
+		responseOne = fmt.Sprintf("{\"do\": %s}", responseOne)
+	}
+
+	// rewrite this at some point
+	for _, item := range gjson.Get(responseOne, "do").Array() {
+		values := strings.Split(item.String(), "|")
+		if len(values) >= 5 && values[0] == "cp" {
+			return values[2:5]
+		}
+	}
+
+	return nil
+}
+
+// Original version
 func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
+	startHash, targetHashS, difficulty := chalValues[0], chalValues[1], chalValues[2]
+
+	targetHash := make([]byte, 32)
+	hex.Decode(targetHash, []byte(targetHashS))
+
+	intDifficulty, err := strconv.ParseInt(difficulty, 10, 64)
+	if err != nil {
+		return "", ErrParsingDifficulty
+	}
+
+	floatDifficulty, err := strconv.ParseFloat(difficulty, 64)
+	if err != nil {
+		return "", ErrParsingDifficulty
+	}
+
+	if maxDifficulty != 0 && intDifficulty > int64(maxDifficulty) {
+		return "", HashLimitExceeded
+	}
+
+	aa := int64(math.Floor(floatDifficulty / 4))
+	shiftedNumber := int64((1 << (4 * aa)) - 1)
+
+	hexNumber := string([]byte{startHash[len(startHash)-1]})
+	startHashTrimmedLast := startHash[:len(startHash)-1]
+
+	radix16HexNumber, err := strconv.ParseInt(hexNumber, 16, 64)
+	if err != nil {
+		return "", ErrCreatingRadixNumber
+	}
+
+	zeroString := ""
+	for i := 0; int64(i) < aa; i++ {
+		zeroString += "0"
+	}
+
+	startHashTwo := int64(1 << intDifficulty)
+
+	var ff int64 = 0
+	var gg int64 = 1
+	var hh int64 = 250
+
+	var solvedHash string
+	var notFound bool = true
+
+	tries := 0
+
+	hasher := sha256.New()
+
+	//this part will be replaced//
+	for {
+		if !notFound {
+			break
+		}
+
+		tries++
+
+		var ts int64
+
+		for c := hh * gg; ff < startHashTwo; ff++ {
+			c--
+			ts = timestampNow()
+			tries++
+
+			if tries > 10000000000 {
+				return "", MaxRetries
+			}
+
+			p1 := strconv.FormatInt(radix16HexNumber+(ff>>(aa<<2)), 16)
+			basep2 := zeroString + strconv.FormatInt(ff&shiftedNumber, 16)
+			p2 := basep2[int64(len(basep2))-aa:]
+
+			g := startHashTrimmedLast + p1 + p2
+
+			hasher.Reset()
+			hasher.Write([]byte(g))
+
+			sum := hasher.Sum(nil)
+
+			isEqual := true
+			for i, v := range targetHash {
+				if sum[i] != v {
+					isEqual = false
+					break
+				}
+			}
+
+			if isEqual {
+				solvedHash = g
+				notFound = false
+				break
+			}
+		}
+
+		if timestampNow()-ts <= 50 {
+			gg++
+		} else {
+			gg--
+			gg = int64(math.Max(float64(gg), 1))
+		}
+
+	}
+
+	// until here //
+
+	return solvedHash, nil
+}
+
+// Coroutine version
+func solveChallengeWithCoroutines(chalValues []string, maxDifficulty int) (string, error) {
 	startHash, targetHashS, difficulty := chalValues[0], chalValues[1], chalValues[2]
 
 	targetHash := make([]byte, 32)
@@ -84,7 +214,7 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	var ff int64 = 0
 	var gg int64 = 1
 	var hh int64 = 250
-	
+
 	tries := 0
 
 	hasher := sha256.New()
@@ -154,24 +284,4 @@ func solveChallenge(chalValues []string, maxDifficulty int) (string, error) {
 	}
 
 	return solvedHash, nil
-}
-
-func timestampNow() int64 {
-	return time.Now().UnixMilli()
-}
-
-func fetchCapChallenge(responseOne string) []string {
-	if !strings.Contains(responseOne, "do") {
-		responseOne = fmt.Sprintf("{\"do\": %s}", responseOne)
-	}
-
-	// rewrite this at some point
-	for _, item := range gjson.Get(responseOne, "do").Array() {
-		values := strings.Split(item.String(), "|")
-		if len(values) >= 5 && values[0] == "cp" {
-			return values[2:5]
-		}
-	}
-
-	return nil
 }
